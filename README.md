@@ -41,10 +41,10 @@ DISCORD_BOT_TOKEN=your-discord-bot-token
     python verify.py
     ```
 ## 使用指令：
-    ```sh
+
     /register [學號]：註冊學號並分配到相應的身份組。例如：/register 1315689
     /check [學號]：檢查學號所屬的組別。例如：/check 2312005
-    ```
+
 ## 日誌
     機器人的日誌將輸出到控制台，記錄了操作過程中的信息和錯誤。
 
@@ -52,7 +52,7 @@ DISCORD_BOT_TOKEN=your-discord-bot-token
     歡迎提交問題和拉取請求。如果你發現任何錯誤或有改進建議，請創建一個 issue 或提交一個 pull request。
 
  ## 授權
-    本專案採用[MIT](LICENSE)授權。
+    本專案採用[MIT](/LICENSE)授權。
 
 ## 備註
     請確保你的機器人具有適當的權限，以便能夠管理角色和發送消息。
