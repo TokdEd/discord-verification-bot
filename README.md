@@ -52,7 +52,7 @@ DISCORD_BOT_TOKEN=your-discord-bot-token
     歡迎提交問題和拉取請求。如果你發現任何錯誤或有改進建議，請創建一個 issue 或提交一個 pull request。
 
  ## 授權
-    本專案採用[ MIT ](LICENSE)授權。
+    本專案採用[MIT](LICENSE)授權。
 
 ## 備註
     請確保你的機器人具有適當的權限，以便能夠管理角色和發送消息。
