@@ -1,24 +1,47 @@
 import sqlite3
-import pandas as pd
+import xlwt
 
-def export_data_to_excel(db_path, output_excel):
-    conn = sqlite3.connect(db_path)
-    c = conn.cursor()
-    
-    # 查询所有数据
-    c.execute("SELECT username, school_number, group_name FROM members")
-    rows = c.fetchall()
+def db_to_xls(db_file, xls_file):
+    # 連接到 SQLite 資料庫
+    conn = sqlite3.connect(db_file)
+    cursor = conn.cursor()
 
-    # 创建 Pandas DataFrame
-    df = pd.DataFrame(rows, columns=["Username", "School Number", "School"])
+    # 查詢資料庫中的所有表格
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    tables = cursor.fetchall()
 
-    # 将 DataFrame 保存为 Excel 文件
-    df.to_excel(output_excel, index=False)
+    # 創建 .xls 文件
+    workbook = xlwt.Workbook()
 
+    for table_name in tables:
+        table_name = table_name[0]
+        cursor.execute(f"SELECT * FROM {table_name}")
+        rows = cursor.fetchall()
+        
+        # 取得欄位名稱
+        cursor.execute(f"PRAGMA table_info({table_name})")
+        columns = [column[1] for column in cursor.fetchall()]
+
+        # 在 .xls 文件中創建一個新的工作表
+        sheet = workbook.add_sheet(table_name)
+
+        # 寫入欄位名稱
+        for col_idx, column_name in enumerate(columns):
+            sheet.write(0, col_idx, column_name)
+
+        # 寫入資料
+        for row_idx, row in enumerate(rows, start=1):
+            for col_idx, cell_value in enumerate(row):
+                sheet.write(row_idx, col_idx, cell_value)
+
+    # 保存 .xls 文件
+    workbook.save(xls_file)
+
+    # 關閉資料庫連接
     conn.close()
-    print(f"数据已成功导出到 {output_excel}")
 
-if __name__ == "__main__":
-    db_path = 'members.db'  # 你的数据库路径
-    output_excel = 'members_export.xlsx'  # 导出的 Excel 文件路径
-    export_data_to_excel(db_path, output_excel)
+# 使用範例
+db_file = 'members.db'  # SQLite 資料庫檔案
+xls_file = 'output.xls'  # 輸出的 .xls 檔案
+db_to_xls(db_file, xls_file)
+
