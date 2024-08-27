@@ -7,7 +7,6 @@ import re
 import sqlite3
 import logging
 import asyncio
-
 # 載入 .env 檔案
 load_dotenv()
 
@@ -42,17 +41,27 @@ conn, c = create_connection()
 # 分配身份組函數
 def assign_group(school_number):
     school_patterns = {
-        r"^131\d{4}$": "台南女中",
-        r"^231\d{4}$": "台南一中",
-        r"^331\d{4}$": "家齊中學",
-        r"^431\d{4}$": "台南二中"
+        "台南女中": (1311001, 1311365),
+        "台南一中": (2310001, 2310675),
+        "台南二中": [(4311001, 4311636), (4313001, 4313023)],
+        "家齊中學": [(3390001, 3390069), (3310001, 3310298), (3312001, 3312103),(3311001, 3311107)]
     }
     
-    for pattern, school in school_patterns.items():
-        if re.match(pattern, school_number):
-            return school
+    try:
+        num = int(school_number)
+        for school, ranges in school_patterns.items():
+            if isinstance(ranges[0], tuple):  # 多個範圍
+                for start, end in ranges:
+                    if start <= num <= end:
+                        return school
+            else:  # 單一範圍
+                start, end = ranges
+                if start <= num <= end:
+                    return school
+    except ValueError:
+        pass  # 如果轉換為整數失敗，直接返回未知學校
+    
     return "未知學校"
-
 # 創建 bot
 intents = discord.Intents.default()
 intents.message_content = True
