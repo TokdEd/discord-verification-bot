@@ -41,23 +41,29 @@ conn, c = create_connection()
 # 分配身份組函數
 def assign_group(school_number):
     school_patterns = {
-        "台南女中": (1311001, 1311365),
-        "台南一中": (2310001, 2310675),
-        "台南二中": [(4311001, 4311636), (4313001, 4313023)],
-        "家齊中學": [(3390001, 3390069), (3310001, 3310298), (3312001, 3312103),(3311001, 3311107)]
+        "a": ("台南女中", 310001, 310365),
+        "b": ("台南一中", 310001, 310675),
+        "c": ("家齊中學", [(390001, 390069), (310001, 310298), (312001, 312103),(311001, 311107)]),
+        "d": ("台南二中", [(311001, 311636), (313001, 313023)])
     }
     
+    if len(school_number) < 2:
+        return "未知學校"
+
+    prefix = school_number[0].lower()
     try:
-        num = int(school_number)
-        for school, ranges in school_patterns.items():
-            if isinstance(ranges[0], tuple):  # 多個範圍
-                for start, end in ranges:
+        num = int(school_number[1:])
+        if prefix in school_patterns:
+            school_info = school_patterns[prefix]
+            school_name = school_info[0]
+            if isinstance(school_info[1], list):  # 多個範圍
+                for start, end in school_info[1:][0]:
                     if start <= num <= end:
-                        return school
+                        return school_name
             else:  # 單一範圍
-                start, end = ranges
+                start, end = school_info[1], school_info[2]
                 if start <= num <= end:
-                    return school
+                    return school_name
     except ValueError:
         pass  # 如果轉換為整數失敗，直接返回未知學校
     
@@ -74,7 +80,12 @@ class SchoolRegistration(commands.Cog):
     @app_commands.command(name="register", description="登記學號")
     async def register(self, interaction: discord.Interaction, school_number: str):
         try:
-            # 首先檢查學號是否已被註冊
+        # 檢查學號格式
+            if len(school_number) < 2 or school_number[0].lower() not in ['a', 'b', 'c', 'd']:
+                await interaction.response.send_message("無效的學號格式。請使用正確的前綴（a/b/c/d）加上學號。")
+                return
+
+        # 首先檢查學號是否已被註冊
             c.execute("SELECT * FROM members WHERE school_number = ?", (school_number,))
             if c.fetchone() is not None:
                 await interaction.response.send_message(f"學號 {school_number} 已經被註冊！")
@@ -82,13 +93,13 @@ class SchoolRegistration(commands.Cog):
 
             username = str(interaction.user)
             group = assign_group(school_number)
-            
+        
             if group == "未知學校":
-                await interaction.response.send_message("無效的學號格式，請重新輸入。")
+                await interaction.response.send_message("無效的學號格式或學號範圍，請確保輸入正確的學號。")
                 return
 
             c.execute("INSERT INTO members (username, school_number, group_name) VALUES (?, ?, ?)",
-                      (username, school_number, group))
+                        (username, school_number, group))
             conn.commit()
 
             await interaction.response.send_message(f"用戶名 {username} 的學號 {school_number} 已分配到 {group} 組別並記錄到資料庫中。")
